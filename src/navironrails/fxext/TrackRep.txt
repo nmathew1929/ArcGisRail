@@ -1,0 +1,256 @@
+
+package navironrails.fxext;
+
+import java.util.ArrayList;
+
+import Model.Data;
+import View.Map;
+import View.PromptDialogue;
+import View.ReceiptView;
+import navironrails.Factory.TrackFactory;
+
+/**
+ * Connects Stations together
+ * 
+ * @author: navin
+ *
+ */
+public class TrackRep {
+
+	private ArrayList<StationRep> stationList;
+	private RailPane rp;
+
+	Map map;
+	ReceiptView receipt;
+    ArrayList<String> list;
+
+	// number of stations
+	public static int stations;
+
+	public TrackRep(RailPane rp, Data data) {
+		this.rp = rp;
+		stationList = data.getStationList(); 
+		stations = stationList.size();
+	}
+
+	// For the views.
+	/*
+	 * public void setStationNum() { this.stations = rp.getStationNum(); }
+	 * 
+	 *//**
+		 * Navin getStationList
+		 *//*
+			 * public void setStations() { stationList = rp.getStationList(); }
+			 */
+
+	// helper function
+	//RETURNS ARRAYLIST OF ONE STATION TO STATION TO ANOTHER STATION
+	public ArrayList<String> trackSegmentStrGen(double[][] trackPixels) {
+
+		ArrayList<String> tracks = new ArrayList<>();
+
+		// The first pixel is always on land.
+		boolean isWater = false;
+		boolean isRoad = false;
+		boolean isLand = true;
+
+		tracks.add("Land");
+		tracks.add(Double.toString(trackPixels[0][0]));
+		tracks.add(Double.toString(trackPixels[0][1]));
+
+		double[] water = { 36.0, 34.0, 29.0 };
+		double[] land = { 53.0, 53.0, 52.0 };
+		double[] road = { 255.0, 255.0, 255.0 };
+		double[] nature = { 56.0, 57.0, 55.0 };
+		// there are other values we need to account for.
+
+		for (int j = 1; j < trackPixels.length - 1; j++) {
+			// Land --> Water
+			if (trackPixels[j][2] == water[0] && trackPixels[j][3] == water[1] && trackPixels[j][4] == water[2]
+					&& isWater == false && isLand == true) {
+
+				isWater = true;
+				isLand = false;
+
+				// Endpoints of the land line.
+				tracks.add(Double.toString(trackPixels[j - 1][0]));
+				tracks.add(Double.toString(trackPixels[j - 1][1]));
+
+				tracks.add("Water");
+				tracks.add(Double.toString(trackPixels[j][0]));
+				tracks.add(Double.toString(trackPixels[j][1]));
+			}
+			// Once water if found looks for the first sign of not water. Then ends the
+			// water segment a pixel before, and starts the water segment.
+
+			// Water --> Land
+			else if (trackPixels[j][2] != water[0] && trackPixels[j][3] != water[1] && trackPixels[j][4] != water[2]
+					&& isWater == true && isLand == false) {
+				// water line segment has to end.
+				isWater = false;
+				isLand = true;
+
+				// Endpoints of the water line.
+				tracks.add(Double.toString(trackPixels[j - 1][0]));
+				tracks.add(Double.toString(trackPixels[j - 1][1]));
+
+				// Land line begins.
+				isLand = true;
+				tracks.add("Land");
+				tracks.add(Double.toString(trackPixels[j][0]));
+				tracks.add(Double.toString(trackPixels[j][1]));
+			}
+
+			// Road conditions --> Roads are always on land. (No exceptions)
+
+			// Land --> Road
+			// This logic is going to be a nightmare to test.
+
+			// We have pixels in the miniroads that are in a range of nearby pixel values.
+			// To check for them I had to basically
+
+			// 1st condition looks for equivalent road pixels. // Took this out
+
+			// 1st condition checks for not water.
+			// 2nd condition checks for not land.
+			// 3rd condition checks for not nature.(the green blob).
+
+			else if (isRoad == false && isLand == true && isWater == false && trackPixels[j][2] == road[0] && trackPixels[j][3] == road[1] && trackPixels[j][4] == road[2]) {
+
+				isRoad = true;
+				isWater = false;
+				isLand = false;
+				// Land line ends.
+				tracks.add(Double.toString(trackPixels[j - 1][0]));
+				tracks.add(Double.toString(trackPixels[j - 1][1]));
+
+				// Road line begins.
+
+				tracks.add("Road");
+
+				tracks.add(Double.toString(trackPixels[j][0]));
+				tracks.add(Double.toString(trackPixels[j][1]));
+
+			}
+
+			// Road --> Land
+			else if (trackPixels[j][2] != road[0] && trackPixels[j][3] != road[1] && trackPixels[j][4] != road[2]
+					&& isRoad == true && isWater == false && isLand == false) {
+
+				isRoad = false;
+				isWater = false;
+				isLand = true;
+
+				// road line ends here.
+				tracks.add(Double.toString(trackPixels[j - 1][0]));
+				tracks.add(Double.toString(trackPixels[j - 1][1]));
+
+				// land track begins here.
+				tracks.add("Land");
+				tracks.add(Double.toString(trackPixels[j][0]));
+				tracks.add(Double.toString(trackPixels[j][1]));
+
+			}
+
+		}
+
+		// This gives the last pixel to completer the final land segment.
+		tracks.add(Double.toString(trackPixels[trackPixels.length - 1][0]));
+		tracks.add(Double.toString(trackPixels[trackPixels.length - 1][1]));
+
+		return tracks;
+	}
+
+	// this builds tracks from one station to another.
+
+	/*
+	 * @author: navin Build from one station to another. houses the factory that
+	 * makes differnt types of track types.
+	 * 
+	 */
+	private void trackBuilder(double[][] trackPixels) {
+		
+		// This list has the information we need to
+		list = this.trackSegmentStrGen(trackPixels);
+
+		//System.out.println("List stuff : " + list.toString());
+		// this is the factory that builds the lines for one track.
+		TrackFactory factory;
+
+		// counts the amount of segments.
+		int count = (list.size()) / 5;
+		//System.out.println("This is from trackBuilder and the number of elements: " + count);
+		int lineCounter = 0;
+
+		// This iterates through the segments.
+		for (int i = 0; i <= count - 1; i++) {
+			String[] segment = new String[5];
+			for (int j = 0; j < 5; j++) {
+				segment[j] = list.get(j + lineCounter);
+				//System.out.println(segment[j]);
+			}
+
+			lineCounter += 5;
+
+			//navin
+			factory = new TrackFactory(segment[0], Double.valueOf(segment[1]), Double.valueOf(segment[2]),
+					Double.valueOf(segment[3]), Double.valueOf(segment[4]));
+	
+			
+			rp.getChildren().add(factory.createLine());
+		}
+
+	}
+	
+
+
+	/*
+	 * @author: antonio This is loop that connects. multiples stations to each
+	 * other.
+	 */
+
+	public void connectStationLoop() {
+
+		// This give you the station numbers
+		System.out.println("The number of Stations from StationList: " + stationList.size());
+
+		// If more than one station exists
+		double[][] trackPixels;
+
+		if (stationList.size() > 1) {
+			// houses pixels from one station to another.
+
+			// This iteration is for building tracks.
+			for (int i = 0; i < stationList.size() - 1; i++) {
+				// gets all the pixels from one station to another.
+				// System.out.println("Loop Counter" + i);
+
+				double x1, y1, x2, y2;
+				x1 = stationList.get(i).getCenterX();
+				y1 = stationList.get(i).getCenterY();
+				x2 = stationList.get(i + 1).getCenterX();
+				y2 = stationList.get(i + 1).getCenterY();
+
+				trackPixels = rp.getImgPro().trackPixelAnalysis(x1, y1, x2, y2);
+
+				// trackPixels = rp.getImgPro().trackPixelAnalysis(xArr.get(i), yArr.get(i),
+				// xArr.get(i + 1),yArr.get(i + 1));
+				for (int j = 0; j < trackPixels.length; j++) {
+					for (int j2 = 0; j2 < trackPixels[j].length; j2++) {
+						// System.out.println("The x values of the track " + trackPixels[j][0]);
+					}
+				}
+				// System.out.println(trackPixels.length);
+				// filters out features and then creates line segments for one track.
+				trackBuilder(trackPixels);
+				
+			}
+		} else {
+			PromptDialogue dialogue = new PromptDialogue();
+			dialogue.alertDialogue("Only one station");
+
+		}
+
+	}
+
+}

@@ -1,0 +1,61 @@
+package View;
+
+import com.esri.arcgisruntime.mapping.ArcGISMap;
+import com.esri.arcgisruntime.mapping.Basemap;
+import com.esri.arcgisruntime.mapping.view.MapView;
+
+import javafx.scene.layout.Pane;
+
+/**
+ * Map Pane Class
+ * @author NavironRails
+ *
+ */
+public class Map extends Pane{
+	
+	private MapView mapView;
+	private ArcGISMap map;
+	private final double cordX = 29.276702; 
+	private final double cordY = -98.28228;
+	private final int mapScale = 14; 
+	/**
+	 * Antonio
+	 * Constructor
+	 */
+	public Map() {
+		map = new ArcGISMap(Basemap.Type.STREETS_VECTOR,cordX, cordY, mapScale);
+		mapView = new MapView();
+        mapView.setMap(map);
+		mapView.setAttributionTextVisible(false);
+	}
+	
+	/**
+	 * Antonio
+	 * setMAp
+	 * @param map
+	 */
+	public void setMapView(String basemapString){
+		map = new ArcGISMap(Basemap.Type.valueOf(basemapString),cordX, cordY, mapScale);
+		mapView.setMap(map);
+	}
+	
+
+	/**
+	 * Antonio
+	 * get map view
+	 * @return map view
+	 */
+	public MapView getMapView(){
+		return mapView;
+	}
+	
+	/**
+	 * Antonio
+	 * get ArcGIS map
+	 * @return map
+	 */
+	public ArcGISMap getArcGisMap() {
+		return map;
+	}
+
+}

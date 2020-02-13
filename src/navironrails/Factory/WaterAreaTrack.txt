@@ -1,0 +1,30 @@
+package navironrails.Factory;
+
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Line;
+
+/*
+* @author: navin
+* is the water bridge track 
+*/
+public class WaterAreaTrack extends Line {
+	private double x1, y1, x2, y2;
+
+	
+	/*
+	 * @author: navin
+	 * used for water bridge track
+	 * @param: x1
+	 * @param: y1
+	 * @param: x2
+	 * @param: y2 
+	 */
+	public WaterAreaTrack(double x1, double y1, double x2, double y2) {
+		super.setStartX(x1);
+		super.setStartY(y1);
+		super.setEndX(x2);
+		super.setEndY(y2);
+		super.setStroke(Color.WHITE);
+		super.setStrokeWidth(3.0);
+	}
+}

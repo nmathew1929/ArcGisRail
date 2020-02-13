@@ -1,0 +1,71 @@
+package Model;
+
+import View.ChangePrice;
+import View.Map;
+import javafx.geometry.Point2D;
+import navironrails.fxext.FilterComponent;
+
+/*
+ * @author: antonio
+ * Finds the different type of tracks and prices them accordingly.
+ */
+
+public class ReceiptLogic {
+	PointLogic pointLogic; 
+	FilterComponent filter;
+	private Map map;
+	private double distance;
+	private double price;
+	
+	/**
+	 * Antonio
+	 * Constructor
+	 * @param map
+	 */
+	public ReceiptLogic(Map map){
+		this.map = map;
+	}
+	
+	/**
+	 * Antonio
+	 * gets distance between 2 points
+	 * @param x1
+	 * @param y1
+	 * @param x2
+	 * @param y2
+	 * @return
+	 */
+	public double getDistance(double x1, double y1, double x2, double y2) {
+		pointLogic = new PointLogic();
+		Point2D startPoint = pointLogic.convertXYto2D(x1, y1);
+		Point2D endPoint = pointLogic.convertXYto2D(x2, y2);
+		distance = pointLogic.getDistanceBetweenTwoPoints(startPoint, endPoint, map);
+		return distance;
+	}
+	
+	/**
+	 * Gets price per mile for each item
+	 * @param Type
+	 * @param distance
+	 * @param cp
+	 * @return
+	 */
+	public double getDistancePrice(String Type, double distance, ChangePrice cp) {
+		price = 0;
+		System.out.println("-------------------" + Type);
+		switch(Type) {
+		case "Land": 
+			price = distance * cp.getTrackPrice();
+			break;
+		case "Water":
+			price = distance * cp.getWtrBrdgePrice();
+			break;
+		case "Road":
+			price = distance * cp.getRoadBrdgPrice();
+			break;
+		}
+		return price;
+	}
+	
+ 
+}

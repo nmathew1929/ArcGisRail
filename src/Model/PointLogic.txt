@@ -1,0 +1,130 @@
+package Model;
+
+import java.text.DecimalFormat;
+import java.util.ArrayList;
+
+import com.esri.arcgisruntime.geometry.CoordinateFormatter;
+import com.esri.arcgisruntime.geometry.GeometryEngine;
+import com.esri.arcgisruntime.geometry.Point;
+
+import View.Map;
+import javafx.geometry.Point2D;
+import navironrails.fxext.StationRep;
+
+
+
+/*
+ * @author: Antonio
+ * @author: Navin
+ * Has most of arcgis capability in here.
+ */
+public class PointLogic {
+
+	//just a decimal formatter.
+	private CoordinateFormatter coordinateClass;
+	private ArrayList<Point> mapPointList;
+	private static DecimalFormat df2 = new DecimalFormat(".##");
+	private final double milesMultiplier = 0.000621371192; 
+
+	
+	public PointLogic() {
+		coordinateClass = new CoordinateFormatter();
+	}
+
+	
+	
+	/*
+	 * @author: Antonio
+	 * Takes in the pointlist on railPane and then converts it into, respective coordinates
+	 */
+
+	public ArrayList<String> getCoordinates(ArrayList<Point> convertedPoints) {
+		ArrayList<String> Coord = new ArrayList<>(); 
+		for(int i = 0; i < convertedPoints.size(); i++) {
+		  String latLonDecimalDegrees = CoordinateFormatter.toLatitudeLongitude(convertedPoints.get(i), CoordinateFormatter.LatitudeLongitudeFormat.DECIMAL_DEGREES, 4);
+		  Coord.add(latLonDecimalDegrees);
+		}
+		return Coord;
+			        
+
+	}
+
+	/*
+	 * @author: Antonio
+	 * converts point2d to point
+	 */
+
+	public ArrayList<Point> generateMapPoints(ArrayList<Point2D> list, Map map) {
+
+		mapPointList = new ArrayList<Point>();
+		Point point;
+		for (int j = 0; j < list.size(); j++) {
+			point = map.getMapView().screenToLocation(list.get(j));
+			mapPointList.add(point);
+		}
+		return mapPointList;
+	}
+
+
+
+	/*
+	 * @author: Antonio 
+	 * takes in a list of points and then gives the distance between them.
+	 * In this case two points represents stations.
+	 */
+
+	public double getDistanceBetweenTwoPoints(ArrayList<Point> mapPoints) {
+
+		double distance = 0;
+		for (int i = 0; i < mapPoints.size()- 1; i++) {
+			distance += GeometryEngine.distanceBetween(mapPoints.get(i), mapPoints.get(i + 1));
+		}
+		double Dist = this.getMiles(distance);
+		return Dist;
+	}
+
+	public double getMiles(double meters) {
+		return meters * milesMultiplier;
+	}
+	
+	
+	/*
+	 * @author: antonioo
+	 * does the same thing as above but for two points
+	 */
+	public double getDistanceBetweenTwoPoints(Point2D start, Point2D end, Map map) {
+		
+		Point point1 = map.getMapView().screenToLocation(start);
+		Point point2 = map.getMapView().screenToLocation(end);
+
+		double distance = 0;
+		distance = GeometryEngine.distanceBetween(point1, point2);
+		double milesDist = this.getMiles(distance);
+		return milesDist;
+	}
+		
+	  
+	  
+	/*
+	 * @author: Navin
+	 *@param: xArr, yArr
+	 *to convert x, y values into Point2d object.
+	 */
+		public ArrayList<Point2D> convertXYto2D(ArrayList<StationRep> stationList) {
+
+			ArrayList<Point2D> pointsList = new ArrayList<>();
+			Point2D point;
+			for (int i = 0; i < stationList.size(); i++) {
+				point = new Point2D(stationList.get(i).getCenterX(), stationList.get(i).getCenterY());
+				pointsList.add(point);
+			}
+
+			return pointsList;
+
+		}
+		public Point2D convertXYto2D(double x1, double x2) {
+			Point2D point = new Point2D(x1,x2);
+			return point;
+		}
+
+}

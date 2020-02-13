@@ -1,0 +1,38 @@
+package navironrails.Factory;
+
+import java.io.File;
+
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.paint.Color;
+import javafx.scene.paint.ImagePattern;
+import javafx.scene.shape.Line;
+
+/*
+ * @author: navin
+ * represents the bridge that goes over infrastructure such as roads and highways.
+ */
+public class RoadTrack extends Line {
+	
+	private double x1, y1, x2, y2;
+
+	private static final File STATION_IMG_FILE = new File("src/resources/icons/crossing.png");
+	private static Image img = new Image(STATION_IMG_FILE.toURI().toString());
+
+
+	/*
+	 * @author: navin
+	 * @param: x1, y1, x2, y2;
+	 * 
+	 */
+	public RoadTrack(double x1, double y1, double x2, double y2) {
+		this.setStartX(x1);
+		this.setStartY(y1);
+		this.setEndX(x2);
+		this.setEndY(y2);
+	    this.setStrokeWidth(6);
+		//this.setFill(Color.CYAN);
+
+	}
+
+}

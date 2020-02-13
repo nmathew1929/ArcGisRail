@@ -1,0 +1,174 @@
+package View;
+
+import java.util.ArrayList;
+
+import Controller.Controller;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.scene.control.Label;
+import javafx.scene.control.ListView;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.control.Tab;
+import javafx.scene.control.TabPane;
+import javafx.scene.control.TextArea;
+import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.VBox;
+import navironrails.fxext.StationRep;
+
+/**
+ * Stats Pane
+ * @author NavironRails
+ *
+ */
+public class StatisticsPane extends Pane {
+
+	private VBox statsColumn;
+	private VBox labelOrganizer;
+	private Label railStatistics;
+
+	private Label numStations;
+	private Label trackLength;
+
+	private String stationText = "Number of Stations: ";
+	private String trackText = "Track Length(Miles): ";
+	private final static String coordinateText = "Coordinates: (Lat/Lng)";
+	private Pane listPane;
+
+	Controller control;
+	private static ObservableList<String> list1;
+	private ListView<String> listView;
+
+	/**
+	 * Antonio
+	 * formats stats into a column
+	 */
+	public StatisticsPane() {
+
+		statsColumn = new VBox();
+		AnchorPane statsAnchor = new AnchorPane();
+		TabPane infoWidget = new TabPane();
+		Tab primaryInfoTab = new Tab();
+		ScrollPane scrollForLabels = new ScrollPane();
+		labelOrganizer = new VBox();
+
+		railStatistics = new Label("Rail Statistics: ");
+
+		numStations = new Label(stationText);
+		trackLength = new Label(trackText);
+		
+		Label stationStats = new Label("Station:  " );
+		Label stationElements = new Label("Bridges: ");
+		Label distance  = new Label("Track Distance:  ");
+
+		
+
+		labelOrganizer.getChildren().addAll(railStatistics, numStations, trackLength, stationStats, stationElements, distance);
+		scrollForLabels.setContent(labelOrganizer);
+		primaryInfoTab.setContent(scrollForLabels);
+
+		infoWidget.getTabs().add(primaryInfoTab);
+		infoWidget.prefWidthProperty().bind(statsColumn.widthProperty());
+
+		TextArea statsArea;
+		statsArea = new TextArea("Naviron Rails v0.3a");
+		statsArea.setPrefColumnCount(20);
+		statsArea.prefHeightProperty().set(200);
+		statsArea.setScrollLeft(0.0);
+		statsArea.setScrollTop(1000);
+		statsArea.setWrapText(true);
+
+		list1 = FXCollections.observableArrayList(coordinateText);
+		listView = new ListView<String>(list1);
+		// There was no reason to expose this Pane outside.
+		Pane listPane = new Pane();
+		listPane.getChildren().add(listView);
+
+		statsAnchor.getChildren().addAll(infoWidget, listPane);
+		AnchorPane.setTopAnchor(infoWidget, 10.0);
+		AnchorPane.setBottomAnchor(listPane, 10.0);
+		statsAnchor.prefHeightProperty().bind(statsColumn.heightProperty());
+		statsColumn.getChildren().addAll(statsAnchor);
+
+	}
+
+	/**
+	 * Navin
+	 * set number of stations
+	 * @param num
+	 */
+	public void setNumStationsLabel(int num) {
+		numStations = new Label(stationText + num);
+		labelOrganizer.getChildren().clear();
+		labelOrganizer.getChildren().addAll(railStatistics, numStations, trackLength);
+	}
+	
+	/**
+	 * Navin
+	 * set distance
+	 * @param distance
+	 */
+	public void setTrackLength(String distance) {
+		trackLength = new Label(trackText + distance);
+		labelOrganizer.getChildren().clear();
+		labelOrganizer.getChildren().addAll(railStatistics, numStations, trackLength);
+	}
+	/**
+	 * Navin
+	 * clear station label
+	 */
+	public  void clearStationLabel() {
+		this.setNumStationsLabel(0);
+		this.setTrackLength("0");
+	}
+	/**
+	 * Navin
+	 * set coordinates to pane
+	 * @param coordList
+	 */
+	public void setCoordinateView(ArrayList<String> coordList) {
+		for (int i = 0; i < coordList.size(); i++) {
+			list1.add("Station " + Integer.toString(i + 1) + ": " + coordList.get(i));
+
+		}
+		//System.out.println(list1);
+	}
+
+	/**
+	 * navin
+	 * update stats pane
+	 */
+	public void updateCoordinateView() {
+		list1.clear();
+
+		list1 = this.getCoordList();
+		list1.add(0, coordinateText);
+
+		listView = new ListView<>(list1);
+
+	}
+	
+	/**
+	 * Navin
+	 * Clear Pane
+	 */
+	public static void clearCoordinateView() {
+		list1.clear();
+		list1.add(0, coordinateText);
+	}
+	
+	/**
+	 * Navin
+	 * get List
+	 * @return Lists
+	 */
+	private ObservableList<String> getCoordList() {
+		return list1;
+	}
+
+	// Do we need this?
+	public VBox getStatsColumn() {
+		return statsColumn;
+	}
+
+}

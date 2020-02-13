@@ -1,0 +1,194 @@
+package Controller;
+
+import java.io.IOException;
+import java.text.DecimalFormat;
+import java.util.ArrayList;
+
+import org.json.JSONException;
+
+import com.esri.arcgisruntime.ArcGISRuntimeEnvironment;
+import com.esri.arcgisruntime.mapping.ArcGISMap;
+
+import Model.Data;
+import Model.ElevationLogic;
+import Model.PointLogic;
+import Model.StationLogic;
+import View.GUIObject;
+import View.GUIObject.ToolBoxType;
+import View.PromptDialogue;
+import cv.ImageProcessing;
+import javafx.event.EventHandler;
+import javafx.scene.control.Tooltip;
+import javafx.scene.input.MouseEvent;
+import navironrails.fxext.RailPane;
+import navironrails.fxext.StationRep;
+
+/**
+ * @author Navin
+ * Controller class is a container that hosts objects that we need for the program to work.
+ * If a module needs a functionality of someother class, it gets injected from here.
+ * This is to keep track of the right object, and not create new instances all the time.
+ */
+public class Controller implements EventHandler<MouseEvent> {
+
+	//view object host all the stuff needed for the view class.
+	private GUIObject view;
+	private RailPane rp; //railpane is where the user place objects such as tracks adn stations.
+	private PointLogic pointLogic;// arcgis implementation
+
+	private ArcGISMap map;
+	private ImageProcessing imgPro; // imgprocessing modul // imgprocessing module
+
+	private String distTemp;
+	private ArrayList<String> coordTempList; 
+	private PromptDialogue prompt;
+	private Data data;// module that holds the data such as stations placement on the railPane,
+
+	/**
+	 * @author navin
+	 * constructer for Controller Class
+	 * @param view
+	 * @param model
+	 * @param data
+	 */
+	public Controller(GUIObject view, Data data, PointLogic model) {
+		//arcgis license to take the watermark off.
+		ArcGISRuntimeEnvironment.setLicense("runtimelite,1000,rud2148553974,none,FA0RJAY3FLGP9KB10146");
+
+		//both view and model are assigned.
+		this.view = view; //
+		this.data = data;
+		this.pointLogic = model;
+		
+		data  = new Data();
+		initRailPaneHandlers();//RailPane Handlers are attached here.
+		map = view.getMap().getArcGisMap();
+	}
+
+	/**
+	 * @author navin
+	 * The railPane handlers are initialized and attached.
+	 */
+	public void initRailPaneHandlers() {
+		rp = view.getRailPane();
+		rp.setOnMousePressed(this::handle);
+	}
+
+	/**
+	 * Navin/Antonio handles mouse events in conjuction with, what buttons are pressed in the toolbox. 
+	 * @param MouseEvent event
+	 */
+	
+
+	public void handle(MouseEvent event) {
+		prompt = new PromptDialogue();
+
+		if (view.getToolBox().getSelectedToggle() == null) {
+			prompt.alertDialogue("Please click a button on the toolbar.");
+		} else {
+			try{
+
+				ToolBoxType ttype = (ToolBoxType) view.getToolBox().getSelectedToggle().getUserData();
+				
+				double x = event.getX();
+				double y = event.getY();
+
+				switch (ttype) {
+				case STATION:
+					//method injection of imageProcessing
+					imgPro = view.getRailPane().getImgPro();
+					//Station Logic instantiation
+					StationLogic logic = new StationLogic(x, y);
+
+					//This is too prevent edge errors.
+					//We don't allow stations to be placed on the edge.
+					double[] checked = logic.edgeChecker(x, y, imgPro.getImg());
+					
+					//change x and y if it is out of bounds.
+					//If a station is placed on the edge it is automatically moved to a point where analysis is possible
+					//checked array stors the new values.
+					x = checked[0]; 
+					y = checked[1];
+
+					//these new values checked for edge errors are then checked for other conditions.
+					logic.setX(x);
+					logic.setY(y);
+
+					//water check
+					if (logic.isOnWater()) {
+						prompt.alertDialogue("A station cannot be on water.");
+					//road check
+					} else if (logic.isOnRoad()) {//on or around road. 
+						prompt.alertDialogue("A station cannot be placed on a road.");
+					//can't place stations directly on top of a station.
+					} else if (logic.isNearOtherStations(x, y, pointLogic.convertXYto2D(data.getStationList()))) {
+						prompt.alertDialogue("You cannot place two station too close to each other.");
+					}
+
+					// if all these checks are passed, we place the station.
+					else {
+
+						//The station is placed on the railPane
+						StationRep stn = view.getRailPane().registerStationComponent(x, y);
+						DecimalFormat numberFormat = new DecimalFormat("#.0");
+
+						//Distance is calculated if more than one station exists, if not nothing happens.
+						distTemp = numberFormat.format(pointLogic
+								.getDistanceBetweenTwoPoints(pointLogic.generateMapPoints(pointLogic.convertXYto2D(data.getStationList()), view.getMap())))
+								.toString();
+
+						
+						
+						//Querying for elevation starts here.
+						String elevation = "Elevation @ this station: ";
+						//This is where the elevation Magic happens
+						coordTempList = pointLogic.getCoordinates(pointLogic.generateMapPoints(pointLogic.convertXYto2D(data.getStationList()), view.getMap()));
+						//Elevation Logic is called.
+						ElevationLogic elev = new ElevationLogic();
+						elev.convertLatLongString(coordTempList);
+
+						//try catch for network connectivity problems.
+						try {
+
+							elevation += elev.getElevation(elev.getLat(), elev.getLon());
+						} catch (JSONException | IOException e) { // TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+
+						
+						//The information is attached to the station.
+						Tooltip t = new Tooltip(elevation);
+						Tooltip.install(stn, t);
+
+
+						//The StaticsPane gets updated accordingly, with the information that we have.
+						view.getStatisticsPane().setNumStationsLabel(data.getStationNum());
+
+						// distance View updated
+						view.getStatisticsPane().setTrackLength(distTemp);
+						// coordinate View updated.
+						view.getStatisticsPane().updateCoordinateView();
+						view.getStatisticsPane().setCoordinateView(coordTempList); 
+					}
+
+					break;
+				case CLEAR:
+					event.consume();
+					break;
+				case TRACK:
+					break;
+				default:
+					break;
+				}
+			}
+			catch(Exception e) {
+				System.out.println("Catching errrors in the mouse handler in the RailPane.");
+			}
+			
+		}
+
+	}
+	
+
+
+}

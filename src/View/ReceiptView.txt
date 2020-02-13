@@ -1,0 +1,374 @@
+package View;
+
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.Scene;
+import javafx.scene.control.Label;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
+
+public class ReceiptView {
+
+	private String qnty = "Quantity: ";
+	private String distance = "Distance: ";
+	private String price = "Price: ";
+	private String wtrBrdge = "Water Bridge ";
+	private String roadBrdge = "Road Bridge ";
+	private String station = "Station ";
+	private String track = "Track ";
+	private String total = "Total: ";
+	
+	private final String zeroString = "0";
+	private final int zeroInt = 0;
+
+	private Label wtrBrdgeLabel;
+	private Label QntyLabel;
+	private Label wtrBrdgeQnty;
+	private Label PriceLabel;
+	private Label wtrBrdgePrice;
+	private Label wtrDistLb;
+	private Label wtrDist;
+
+	private Label roadBrdgeLabel;
+	private Label QntyLabel2;
+	private Label roadBrdgeQnty;
+	private Label PriceLabel2;
+	private Label roadBrdgePrice;
+	private Label roadDistLb;
+	private Label roadDist;
+
+	private Label stationLabel;
+	private Label QntyLabel3;
+	private Label stationQnty;
+	private Label PriceLabel3;
+	private Label stationPrice;
+	private Label stationDistLb;
+	private Label stationDist;
+
+	private Label trackLabel;
+	private Label QntyLabel4;
+	private Label trackQnty;
+	private Label PriceLabel4;
+	private Label trackPrice;
+	private Label trackDistLb;
+	private Label trackDist;
+
+	private Label totalLbl;
+	private Label sumtotal;
+
+	// ChangePrice cp;
+
+	Stage stage;
+
+	GridPane gp;
+
+	Label lb1;
+	Label lb2;
+	Label lb3;
+	Label lb4;
+	
+	private Label lb11;
+	private Label lb21;
+	private Label lb31;
+	private Label lb41;
+	
+	private VBox  vbox1 = new VBox();
+	private VBox  vbox2 = new VBox();
+	private HBox hbox = new HBox();
+	
+	
+
+
+	/**
+	 * Antonio GUI for Receipt
+	 * 
+	 * @param stage
+	 * @param cp
+	 */
+	public ReceiptView(Stage stage, ChangePrice cp) {
+		this.stage = stage;
+		BorderPane borderpane = new BorderPane();
+		//VBox vbox = new VBox();
+
+		lb2 = new Label("Bridge over Water Cost/Mile ");
+		lb3 = new Label("Bridge over Roads or Highway Cost/Mile ");
+		lb1 = new Label("Railway Track Cost/Mile ");
+		lb4 = new Label("Station(s) Cost");
+		
+		lb21 = new Label("$ "+ String.valueOf(cp.getWtrBrdgePrice()));
+		lb31 = new Label("$ "+ String.valueOf(cp.getRoadBrdgPrice()));
+		lb11 = new Label("$ "+ String.valueOf(cp.getTrackPrice()));
+		lb41 = new Label("$ "+ String.valueOf(cp.getStationPrice()));
+		
+		vbox1.setPadding(new Insets(5, 25, 25, 25));
+		vbox2.setPadding(new Insets(5, 25, 25, 25));
+		vbox1.getChildren().addAll(lb2, lb3, lb1, lb4);
+		vbox2.getChildren().addAll(lb21, lb31, lb11, lb41);
+
+		hbox.getChildren().addAll(vbox1,vbox2);
+
+		//vbox.setSpacing(10);
+
+		//vbox.getChildren().addAll(lb2, lb3, lb1, lb4);
+		borderpane.setTop(hbox);
+
+		wtrBrdgeLabel = new Label(wtrBrdge);
+		QntyLabel = new Label(qnty);
+		wtrBrdgeQnty = new Label("0");
+		wtrDistLb = new Label(distance);
+		wtrDist = new Label("0 miles");
+		PriceLabel = new Label(price);
+		wtrBrdgePrice = new Label("$ 0.00");
+
+		roadBrdgeLabel = new Label(roadBrdge);
+		QntyLabel2 = new Label(qnty);
+		roadBrdgeQnty = new Label(zeroString);
+		roadDistLb = new Label(distance);
+		roadDist = new Label("0 miles");
+		PriceLabel2 = new Label(price);
+		roadBrdgePrice = new Label("$ 0.00");
+
+		stationLabel = new Label(station);
+		QntyLabel3 = new Label(qnty);
+		stationQnty = new Label("0");
+		PriceLabel3 = new Label(price);
+		stationPrice = new Label("$ 0.00");
+
+		trackLabel = new Label(track);
+		QntyLabel4 = new Label(qnty);
+		trackQnty = new Label("0");
+		trackDistLb = new Label(distance);
+		trackDist = new Label("0 miles");
+		PriceLabel4 = new Label(price);
+		trackPrice = new Label("$ 0.00");
+
+		totalLbl = new Label(total);
+		sumtotal = new Label("$ 0.00");
+
+		Label line = new Label("-----------------------");
+
+		gp = new GridPane();
+
+		// Setting the vertical and horizontal gaps between the columns
+		gp.setVgap(7);
+		gp.setHgap(5);
+
+		// Setting the Grid alignment
+		gp.setAlignment(Pos.CENTER_LEFT);
+
+		// Arranging all the nodes in the grid
+		gp.add(wtrBrdgeLabel, 0, 0);
+		gp.add(QntyLabel, 1, 0);
+		gp.add(wtrBrdgeQnty, 2, 0);
+		gp.add(wtrDistLb, 3, 0);
+		gp.add(wtrDist, 4, 0);
+		gp.add(PriceLabel, 5, 0);
+		gp.add(wtrBrdgePrice, 6, 0);
+
+		gp.add(roadBrdgeLabel, 0, 1);
+		gp.add(QntyLabel2, 1, 1);
+		gp.add(roadBrdgeQnty, 2, 1);
+		gp.add(roadDistLb, 3, 1);
+		gp.add(roadDist, 4, 1);
+		gp.add(PriceLabel2, 5, 1);
+		gp.add(roadBrdgePrice, 6, 1);
+
+		gp.add(trackLabel, 0, 2);
+		gp.add(QntyLabel4, 1, 2);
+		gp.add(trackQnty, 2, 2);
+		gp.add(trackDistLb, 3, 2);
+		gp.add(trackDist, 4, 2);
+		gp.add(PriceLabel4, 5, 2);
+		gp.add(trackPrice, 6, 2);
+
+		gp.add(stationLabel, 0, 3);
+		gp.add(QntyLabel3, 1, 3);
+		gp.add(stationQnty, 2, 3);
+		gp.add(PriceLabel3, 5, 3);
+		gp.add(stationPrice, 6, 3);
+
+		gp.add(line, 6, 4);
+
+		gp.add(totalLbl, 5, 5);
+		gp.add(sumtotal, 6, 5);
+
+		gp.setPadding(new Insets(5,10,10,10));
+		borderpane.setCenter(gp);
+
+		stage.setTitle("Rail Road Receipt");
+		stage.setScene(new Scene(borderpane, 500, 450));
+		stage.initModality(Modality.APPLICATION_MODAL);
+	}
+
+	/**
+	 * Antonio Show Receipt Pane
+	 */
+	public void show() {
+		stage.show();
+	}
+
+	/**
+	 * Antonio set text of Water Bridge price on Receipt Pane
+	 * 
+	 * @param price
+	 */
+	public void setWaterText(String price) {
+		lb21.setText(price);
+	}
+
+	/**
+	 * Antonio set Road Bridge price text on Receipt Pane
+	 * 
+	 * @param price
+	 */
+	public void setRoadText(String price) {
+		lb31.setText(price);
+	}
+
+	/**
+	 * Antonio set text for track price on Receipt Pane
+	 * 
+	 * @param price
+	 */
+	public void setTrackText(String price) {
+		lb11.setText(price);
+	}
+
+	/**
+	 * Antonio set text for Station price on Receipt Pane
+	 * 
+	 * @param price
+	 */
+	public void setStationText(String price) {
+		lb41.setText(price);
+	}
+
+	/**
+	 * Antonio set text of Water Bridge Text quantity
+	 * 
+	 * @param num
+	 */
+	public void updateWtrBrdgeQnty(int num) {
+		wtrBrdgeQnty.setText("" + num);
+	}
+
+	/**
+	 * Antonio set text of Water Bridge Distance
+	 * 
+	 * @param num
+	 */
+	public void updateWtrDistance(String num) {
+		wtrDist.setText(num);
+	}
+
+
+	public void clearPrice() {
+		this.updateRoadBrdgePrice(zeroString);
+		this.updateRoadBrdgeQnty(zeroInt);
+		this.updateRoadDistance(zeroString);
+		this.updateStationPrice(zeroString);
+		this.updateStationQnty(zeroInt);
+		this.updateSumTotal(zeroString);
+		this.updateTrackDistance(zeroString);
+		this.updateTrackPrice(zeroString);
+		this.updateTrackQnty(zeroInt);
+		this.updateWtrBrdgePrice(zeroString);
+		this.updateWtrBrdgeQnty(zeroInt);
+		this.updateWtrDistance(zeroString);
+	}
+
+	/**
+	 * Antonio set Text of Water Bridge Total
+	 * 
+	 * @param num
+	 */
+	public void updateWtrBrdgePrice(String num) {
+		wtrBrdgePrice.setText(num);
+	}
+
+	/**
+	 * Antonio set Text of Road Bridge Quantity
+	 * 
+	 * @param num
+	 */
+	public void updateRoadBrdgeQnty(int num) {
+		roadBrdgeQnty.setText("" + num);
+	}
+
+	/**
+	 * Antonio update Road Distance on Receipt Pane
+	 * 
+	 * @param num
+	 */
+	public void updateRoadDistance(String num) {
+		roadDist.setText(num);
+	}
+
+	/**
+	 * update Road Bridge total on Receipt Pane
+	 * 
+	 * @param num
+	 */
+	public void updateRoadBrdgePrice(String num) {
+		roadBrdgePrice.setText(num);
+	}
+
+	/**
+	 * Antonio update station Quantity on Receipt Pane
+	 * 
+	 * @param num
+	 */
+	public void updateStationQnty(int num) {
+		stationQnty.setText("" + num);
+	}
+
+	/**
+	 * Antonio update Station total Price
+	 * 
+	 * @param num
+	 */
+	public void updateStationPrice(String num) {
+		stationPrice.setText(num);
+	}
+
+	/**
+	 * Antonio update track quantity
+	 * 
+	 * @param num
+	 */
+	public void updateTrackQnty(int num) {
+		trackQnty.setText("" + num);
+	}
+
+	/**
+	 * Antonio update track distance
+	 * 
+	 * @param num
+	 */
+	public void updateTrackDistance(String num) {
+		trackDist.setText(num);
+	}
+
+	/**
+	 * Antonio update track total Price
+	 * 
+	 * @param num
+	 */
+	public void updateTrackPrice(String num) {
+		trackPrice.setText(num);
+	}
+
+	/**
+	 * Antonio update sumTotal
+	 * 
+	 * @param num
+	 */
+	public void updateSumTotal(String num) {
+		sumtotal.setText(num);
+	}
+
+}

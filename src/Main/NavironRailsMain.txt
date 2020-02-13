@@ -1,0 +1,64 @@
+package Main;
+
+
+import com.esri.arcgisruntime.mapping.ArcGISMap;
+
+import Controller.Controller;
+import Model.Data;
+import Model.PointLogic;
+import View.GUIObject;
+import javafx.application.Application;
+import javafx.scene.Scene;
+import javafx.stage.Stage;
+/**
+ * Main Class
+ * @author antonio 
+ * 
+ *
+ */
+public class NavironRailsMain extends Application {
+
+    /**
+     * Initialize the JavaFX engine and graphical context before entering the continuous event processing mode.
+     * @param primaryStage JavaFX Window Graphical Context
+     */
+    private ArcGISMap map;
+
+   
+    /*
+     * @author: navin
+     * @param: primaryStage
+     * Main method for the app.
+     */
+    public void start(Stage primaryStage) {
+		
+        Data data = new Data();
+    	//View Object
+        GUIObject gui = new GUIObject(data);
+        Scene scene = gui.initializeGUI();
+
+        //Model Object
+        PointLogic model = new PointLogic();
+        //Controller Object
+        Controller controller = new Controller(gui, data, model);
+
+ 
+   
+        primaryStage.setTitle("Naviron Rails v0.3a");
+        primaryStage.setResizable(false);
+        primaryStage.setScene(scene);
+        
+        primaryStage.show();
+        
+   
+    }
+
+    /**
+     * The main entry point into the application.
+     * @param args CommandLine Arguments
+     */
+    public static void main(String[] args) {
+        launch(args);
+    }
+}
+

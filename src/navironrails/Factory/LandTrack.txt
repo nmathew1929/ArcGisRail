@@ -1,0 +1,33 @@
+package navironrails.Factory;
+
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Line;
+
+
+/*
+ * @navin: 
+ * Land track which is just a regular rail.
+ */
+
+public class LandTrack extends Line {
+	
+	private double x1, y1, x2, y2;
+	private final double strokeWidthNum = 1.5;
+	private final double num1= 3.0;
+	private final double num2= 7.0;
+
+	/*
+	 * @author: navin
+	 * makes track that is over regular land.
+	 */
+	public LandTrack(double x1, double y1, double x2, double y2) {
+		this.setStartX(x1);
+		this.setStartY(y1);
+		this.setEndX(x2);
+		this.setEndY(y2);
+		this.setFill(Color.BLACK);
+		this.getStrokeDashArray().addAll(num1,num2,num1,num2);	
+	    this.setStrokeWidth(strokeWidthNum);
+	}
+
+}

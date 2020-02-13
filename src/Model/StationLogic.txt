@@ -1,0 +1,224 @@
+package Model;
+
+import java.util.ArrayList;
+
+import org.opencv.core.Mat;
+import org.opencv.core.Rect;
+
+import cv.ImageProcessing;
+import javafx.geometry.Point2D;
+import navironrails.fxext.StationRep;
+
+
+/*
+ * @author: navin 
+ * Station placement logic is in this class.
+ */
+public class StationLogic {
+
+	// This x y values can then be used for mulitple logic checks.
+	private ArrayList<StationRep> stationList;
+	private ImageProcessing imgPro;//Image Processing methods are used for finding the different characteristics of the road underneath.
+	private double x, y;
+	private final double[] roadPixel = {255,255,255};
+
+	/*
+	 * @author: navin
+	 * constructor
+	 * @param: x
+	 * @param: y
+	 */
+	public StationLogic(double x, double y) {
+		this.x = x;
+		this.y = y;
+
+		//to access all of the methods in imageProcessing
+		imgPro = new ImageProcessing();
+
+
+	}
+
+	/*
+	 * @author: navin
+	 * checks if the new station trying to be placed by the user is on water.
+	 */
+	public boolean isOnWater() {
+
+		if (imgPro.getColorFromPointList(x, y)[0] == 36.0 && imgPro.getColorFromPointList(x, y)[1] == 34.0
+				&& imgPro.getColorFromPointList(x, y)[2] == 29.0) {
+			return true;
+		}
+		return false;
+	}
+
+
+	/*
+	 * @author: navin
+	 * checks if the station trying to be placed by the user is  on road or around is roadPixel.
+	 */
+	public boolean isOnRoad() {
+		// 1. On road or near the visinity of a road.
+		// 2. The Station pixel 20*20, therfore it is important that we don't overap on
+		// the road.
+		// 3. This has to consider the edge of the image also, all four borders.
+
+		//just need to check for not land.
+
+		boolean isB, isG, isR;
+		isB = false;
+		isG = false;
+		isR = false;
+ 
+		 
+		int xpos = 8;
+		int ypos = 8;
+
+		
+		//Checks for the range of roadPixel values on all 4 ranges. +x, +y, -x, -y
+		
+		for (int i = (int)x; i < x + xpos; i++) {
+		
+			for (int j = 0; j < roadPixel.length; j++) {
+				if (imgPro.getColorFromPointList(i, y)[0] == roadPixel[j]) {
+					isB = true;
+				}
+				if (imgPro.getColorFromPointList(i, y)[1] == roadPixel[j]) {
+					isG = true;
+			}
+				if (imgPro.getColorFromPointList(i, y)[2] == roadPixel[j]) {
+					isR = true;
+				}
+
+			}	
+			
+		}
+
+		for (int i = (int)y; i < y + ypos; i++) {
+			
+			for (int j = 0; j < roadPixel.length; j++) {
+				if (imgPro.getColorFromPointList(x, i)[0] == roadPixel[j]) {
+					isB = true;
+				}
+				if (imgPro.getColorFromPointList(x, i)[1] == roadPixel[j]) {
+					isG = true;
+			}
+				if (imgPro.getColorFromPointList(x, i)[2] == roadPixel[j]) {
+					isR = true;
+				}
+
+			}	
+			
+		}	
+
+		for (int i = (int)y; i > y - ypos; i--) {
+			
+			for (int j = 0; j < roadPixel.length; j++) {
+				if (imgPro.getColorFromPointList(x, i)[0] == roadPixel[j]) {
+					isB = true;
+				}
+				if (imgPro.getColorFromPointList(x, i)[1] == roadPixel[j]) {
+					isG = true;
+			}
+				if (imgPro.getColorFromPointList(x, i)[2] == roadPixel[j]) {
+					isR = true;
+				}
+
+			}	
+			
+		}	
+		
+		for (int i = (int)x; i > x - xpos; i--) {
+			
+			for (int j = 0; j < roadPixel.length; j++) {
+				if (imgPro.getColorFromPointList(i, y)[0] == roadPixel[j]) {
+					isB = true;
+				}
+				if (imgPro.getColorFromPointList(i, y)[1] == roadPixel[j]) {
+					isG = true;
+			}
+				if (imgPro.getColorFromPointList(i, y)[2] == roadPixel[j]) {
+					isR = true;
+				}
+
+			}	
+			
+		}
+
+		
+
+		return isB && isG && isR;
+	}
+
+
+	/*
+	 * @author: navin
+	 * Checks if the stations are near each other.
+	 * Prevents them from being placed on top of each other.
+	 */
+	public boolean isNearOtherStations(double currentX, double currentY, ArrayList<Point2D> stationList) {
+
+		Point2D currentStation = new Point2D(x, y);
+		double minDist = 15.0;
+		for (int i = 0; i < stationList.size(); i++) {
+			if (currentStation.distance(stationList.get(i)) < minDist) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+	
+	//setter and getters
+	public void setX(double x) {
+		this.x = x;
+	}
+	
+	public void setY(double y) {
+		this.y = y;
+	}
+	
+	//Edge checker method for when the station is on the edge.
+	public void stationImg(double x, double y) {
+		Mat img = imgPro.getImg();
+		
+		if(x >= img.width()-10) {
+			//System.out.println("Greater than x edge.");
+		} 
+		if (y >= img.width()-10) {
+			//System.out.println("Gretter than y edge.");
+		}
+
+		Rect roi = new Rect((int)x, (int)y, 8, 8); 
+
+	}
+	
+	//if x > img.width subtract it
+	//if y <> img 
+	/*
+	 * @author: navin
+	 * used to check the edge, and prevent out of bound errors.
+	 */
+	public double[] edgeChecker(double x, double y, Mat img) {
+		System.out.println("Image width: " + img.width());
+		System.out.println("Image length: " + img.height());
+		double radius = 20;
+		System.out.println(x + radius);
+
+		double[] array = {x, y};
+		if(x+radius > img.width()) {
+			System.out.println("x is out of bounds positive.");
+			array[0] = x-radius;
+		}
+		if(y-radius <  0) {
+			System.out.println("y is out bounds negatively");
+			array[1] = y+radius;
+		}
+		
+		if(y+radius > img.height()) {
+			System.out.println("y is out of bounds positively.");
+			array[1] = y-radius;
+		}
+		
+		return array;
+	}
+}

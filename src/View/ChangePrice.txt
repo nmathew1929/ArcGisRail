@@ -1,0 +1,216 @@
+package View;
+
+import java.text.DecimalFormat;
+import java.util.ArrayList;
+
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
+import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
+
+public class ChangePrice {
+	
+	ArrayList<Double> newValues;
+	ReceiptView view;
+	
+	private double waterBridgePrice;
+	private double roadBridgePrice;
+	private double trackPrice;
+	private double stationPrice;
+	private DecimalFormat df;
+	private String formattedtrackPrice, formattedWtrBrdgePrice, formattedRoadBrdgPrice, formattedStationPrice;
+	
+	/**
+	 * Antonio
+	 * Constructor
+	 */
+	public ChangePrice() {
+		waterBridgePrice = 7000;
+		roadBridgePrice = 450000;
+		trackPrice = 34000;
+		stationPrice = 55600;
+	}
+	
+	/**
+	 * GUI for price update
+	 * @param view
+	 */
+	public void ChangePricePane(ReceiptView view) {
+		Stage stage = new Stage();
+		VBox vbox = new VBox();
+		newValues = new ArrayList<>();
+		newValues.add(0.0);
+		newValues.add(0.0);
+		newValues.add(0.0);
+		newValues.add(0.0);
+		
+		Label label1 = new Label("Track Price per Mile:");
+		TextField textField1 = new TextField ("" + getTrackPrice());
+		HBox hb1 = new HBox();
+		hb1.getChildren().addAll(label1, textField1);
+		hb1.setSpacing(30);
+			
+		Label label2 = new Label("Water Bridge Price per Mile:");
+		TextField textField2 = new TextField ("" + getWtrBrdgePrice());
+		HBox hb2 = new HBox();
+		hb2.getChildren().addAll(label2, textField2);
+		hb2.setSpacing(30);
+		
+		Label label3 = new Label("Road Bridge Price per Mile:");
+		TextField textField3 = new TextField ("" + getRoadBrdgPrice());
+		HBox hb3 = new HBox();
+		hb3.getChildren().addAll(label3, textField3);
+		hb3.setSpacing(30);
+		
+		Label label4 = new Label("Stations Price per Mile:");
+		TextField textField4 = new TextField ("" + getStationPrice());
+		Button update = new Button("Update");
+		
+		HBox hb4 = new HBox();
+		hb4.getChildren().addAll(label4, textField4, update);
+		hb4.setSpacing(30);
+		
+		Label updateLabel = new Label();
+		
+		vbox.getChildren().addAll(hb1,hb2,hb3,hb4,updateLabel);
+		
+		update.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+
+            	try {
+	            	double trackTextInput = Double.valueOf(textField1.getText());
+	            	double waterBridgeTextInput = Double.valueOf(textField2.getText());
+	            	double roadBridgeTextInput = Double.valueOf(textField3.getText());
+	            	double stationTextInput = Double.valueOf(textField4.getText());
+	            	
+	            	setTrackPrice(trackTextInput);
+	            	setWtrPrice(waterBridgeTextInput);
+	            	setRoadPrice(roadBridgeTextInput);
+	            	setStationPrice(stationTextInput);
+	            	
+	            	df = new DecimalFormat("###,###,###,###.##");
+	        		formattedtrackPrice = df.format(getTrackPrice()); 
+	        		formattedWtrBrdgePrice = df.format(getWtrBrdgePrice());
+	        		formattedRoadBrdgPrice = df.format(getRoadBrdgPrice());
+	        		formattedStationPrice = df.format(getStationPrice());
+	        		
+	            	System.out.println("track price set to " + formattedtrackPrice);
+	            	newValues.set(0,getTrackPrice());
+	            	view.setTrackText("$ " + formattedtrackPrice);
+		
+	            	System.out.println("water price set to " + formattedWtrBrdgePrice);
+	            	newValues.add(1,getWtrBrdgePrice());
+	            	view.setWaterText("$ " + formattedWtrBrdgePrice);
+	            	
+	            	System.out.println("road price set to " + formattedRoadBrdgPrice);
+	            	newValues.add(2,getRoadBrdgPrice());
+	            	view.setRoadText("$ " + formattedRoadBrdgPrice);
+	            	
+	            	System.out.println("station price set to " + formattedStationPrice);
+	            	newValues.add(3,getStationPrice());
+	            	view.setStationText("$ " + formattedStationPrice);
+	            	
+	            	updateLabel.setText("Update Complete");
+            	}catch(Exception e) {
+            		updateLabel.setText("Error!...Check Values");
+            	}
+            	
+            }
+        });
+		
+		
+		stage.setTitle("Change Price");
+        stage.initModality(Modality.APPLICATION_MODAL);
+        stage.setScene(new Scene(vbox,600, 300));
+        stage.show();
+        
+	}
+	
+	/**
+	 * Antonio
+	 * Returns an array of new values
+	 * @return
+	 */
+	public ArrayList<Double> getUpdateValues() {
+		return newValues;
+	}
+	
+	/**
+	 * Antonio
+	 * Setter for price of Water Bridge
+	 * @param waterBridgePrice
+	 */
+	public void setWtrPrice(double waterBridgePrice) {
+		this.waterBridgePrice = waterBridgePrice;
+	}
+	
+	/**
+	 * Antonio
+	 * Get price of Water Bridge
+	 * @return
+	 */
+	public double getWtrBrdgePrice() {
+		return waterBridgePrice;
+	}
+	
+	/**
+	 * Antonio
+	 * set price of Road Bridge
+	 * @param roadBridgePrice
+	 */
+	public void setRoadPrice(double roadBridgePrice) {
+		this.roadBridgePrice = roadBridgePrice;
+	}
+	
+	/**
+	 * Antonio
+	 * get Road Bridge Price
+	 * @return
+	 */
+	public double getRoadBrdgPrice() {
+		return roadBridgePrice;
+	}
+	
+	/**
+	 * Antonio
+	 * set track price
+	 * @param trackPrice
+	 */
+	public void setTrackPrice(double trackPrice) {
+		this.trackPrice = trackPrice;
+	}
+	
+	/**
+	 * Antonio
+	 * get track price
+	 * @return
+	 */
+	public double getTrackPrice() {
+		return trackPrice;
+	}
+	
+	/**
+	 * Antonio
+	 * set station price
+	 * @param stationPrice
+	 */
+	public void setStationPrice(double stationPrice) {
+		this.stationPrice = stationPrice;
+	}
+	
+	/**
+	 * Antonio
+	 * get station price
+	 * @return
+	 */
+	public double getStationPrice() {
+		return stationPrice;
+	}
+}

@@ -1,0 +1,58 @@
+package Model;
+
+import navironrails.fxext.RailPane;
+import navironrails.fxext.TrackRep;
+
+
+/*
+ * @author: navin
+ * Used to draw stations and tracks. 
+ */
+public class Draw {
+
+	private TrackRep track;
+	private RailPane pane;
+	private Data data;
+
+	/*
+	 * @author: navin
+	 * @param: pane
+	 * @param: data
+	 * Constructor
+	 */
+	public Draw(RailPane pane, Data data) {
+		this.pane = pane;
+		track = new TrackRep(pane, data);
+		this.data = data;
+	}
+
+	/*
+	 * @author: navin
+	 * Draws tracks, doesn't do anything if only one station.
+	 */
+	public void trackDraw() {
+		if (data.getStationNum() <= 1) {
+
+		} else {
+			track.connectStationLoop();
+		}
+	}
+
+	/*
+	 * @author: navin
+	 * Places stations, mainly used for undo and redo function.
+	 */
+	public void stationDraw() {
+		pane.getChildren().addAll(data.getStationList());
+	}
+
+	/*
+	 * @author navin
+	 * clears all elements from the railPane
+	 */
+	public void clear() {
+		pane.getChildren().clear();
+
+	}
+
+}

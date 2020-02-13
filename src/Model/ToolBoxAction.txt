@@ -1,0 +1,60 @@
+package Model;
+
+import View.PromptDialogue;
+
+/*
+ * @author navin
+ * implementaton of the undo and redo.
+ */
+public class ToolBoxAction {
+
+	private Data data;
+	private PromptDialogue prompt; // to alert the user of various changes.
+
+	/*
+	 * @author navin
+	 * @param:  data
+	 * Constructor
+	 * 
+	 */
+	public ToolBoxAction(Data data) {
+		this.data = data;
+		prompt = new PromptDialogue();
+	}
+
+	/*
+	 * @author navin
+	 * used for undoing elements in the railPane
+	 */
+	public void undo() {
+		
+		if (data.getStationList().isEmpty()) {
+			prompt.alertDialogue("There are no actions to undo.");
+		} else {
+			data.removeLastStn();
+		}
+	}
+
+	/*
+	 * @author navin
+	 * used for redoing action on the gui.
+	 * 
+	 */
+	public void redo() {
+		if(data.getStack().isEmpty()) {
+			prompt.alertDialogue("There are no actions to redo.");
+		}
+		else {
+			data.redoAction();
+		}
+	}
+	
+
+
+	/*
+	 * not implemented(not a usecase).
+	 * for future releases.
+	 */
+	public void undoafterClear() {
+	}
+}

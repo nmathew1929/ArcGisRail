@@ -1,0 +1,425 @@
+/*
+* Copyright <YEAR> <COPYRIGHT HOLDER>
+*
+* Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following
+* conditions are met:
+*
+* 1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following
+* disclaimer.
+*
+* 2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following
+* disclaimer in the documentation and/or other materials provided with the distribution.
+*
+* 3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote
+* products derived from this software without specific prior written permission.
+*
+* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
+* EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+* MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
+* THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+* SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT
+* OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+* HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
+* TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+* SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*
+*
+ */
+
+package View;
+
+import java.io.File;
+
+import Model.CalculatePrice;
+import Model.Data;
+import Model.Draw;
+import Model.ReceiptLogic;
+import Model.ToolBoxAction;
+import javafx.collections.FXCollections;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.ToggleButton;
+import javafx.scene.control.ToggleGroup;
+import javafx.scene.control.Tooltip;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
+import javafx.scene.text.Text;
+import javafx.stage.Stage;
+import navironrails.fxext.FilterComponent;
+import navironrails.fxext.RailPane;
+
+/**
+ * Main View Class
+ * 
+ * @author NavironRails
+ *
+ */
+public class GUIObject {
+
+	public enum ToolBoxType {
+		STATION, TRACK, CLEAR, UNDO, REDO, PRICE
+	}
+
+	// These objects and containers are often needed by other
+	// widgets for the purposes of binding themselves and
+	// in general for working various layout magicks.
+
+	private Scene scene;
+
+	// The main pane that house all the other panes in the app.
+	private BorderPane borderpane;
+
+	private StackPane bindPane;
+	private VBox topBar;
+
+	// These Panes are Important, as they are called most
+	// often during the handling of GUI events.
+	private ToggleGroup toolBox;
+
+	private Pane mapPane;
+	private RailPane railPane;
+
+	// Arcgis object
+	private Map map;
+	private StatisticsPane sp;
+
+	// for now this is bad practice.
+	// need to implement a stack for this to work.
+
+	private Stage stage;
+	private FilterComponent filter;
+
+	private ReceiptView receiptView;
+	private ReceiptLogic receiptLogic;
+	private ChangePrice changePrice;
+	private CalculatePrice calprice;
+	private Boolean Flag = false;
+	private Boolean trackCheck = false;
+
+	private Data data;
+
+	/**
+	 * 
+	 * Antonio Constructor
+	 */
+
+	public GUIObject(Data data) {
+
+		this.topBar = new VBox();
+		this.toolBox = new ToggleGroup();
+		this.bindPane = new StackPane();
+		this.mapPane = new Pane();
+		this.borderpane = new BorderPane();
+
+		stage = new Stage();
+		changePrice = new ChangePrice();
+		receiptView = new ReceiptView(stage, changePrice);
+		this.data = data;
+
+	}
+
+	public StackPane getBindPane() {
+		return bindPane;
+	}
+
+	/**
+	 * Antonio initializes all subcomponents of GUI
+	 */
+	public Scene initializeGUI() {
+		initMap();
+		initRailPane();
+		initTopBar();
+		initStatistics();
+		// initReceiptGeneration.
+		scene = new Scene(borderpane);
+		return scene;
+	}
+
+	/**
+	 * exit Dialogue
+	 */
+	// This can be set to the close dialogue.
+	private void exitDialogue() {
+		Stage prompt = new Stage();
+
+		Button yesBtn = new Button("Yes");
+		yesBtn.setOnMousePressed(a -> System.exit(1));
+
+		Button noBtn = new Button("No");
+		noBtn.setOnMousePressed(a -> prompt.close());
+
+		HBox btnBox = new HBox(yesBtn, noBtn);
+		btnBox.setAlignment(Pos.CENTER);
+		btnBox.setPadding(new Insets(5, 0, 5, 0));
+		btnBox.setSpacing(10);
+
+		VBox box = new VBox(new Text("Do you really want to exit?"), btnBox);
+		box.setPadding(new Insets(5, 5, 5, 5));
+
+		Scene promptScene = new Scene(box);
+		prompt.setScene(promptScene);
+		prompt.show();
+	}
+
+	private void setTrackCheck(boolean value) {
+		trackCheck = value;
+	}
+
+	private boolean getTrackCheck() {
+		return trackCheck;
+	}
+
+	private void initTopBar() {
+		topBar.getChildren().add(initToolBox());
+		topBar.setSpacing(4);
+		borderpane.setTop(topBar);
+	}
+
+	private HBox initToolBox() {
+
+		ToggleButton stationBtn;
+		ToggleButton trackBtn;
+		ToggleButton undoBtn;
+		ToggleButton redoBtn;
+		ToggleButton clearBtn;
+		ToggleButton receiptBtn;
+		ToggleButton updatePriceBtn;
+
+		String[] maps = { "LIGHT_GRAY_CANVAS", "IMAGERY", "STREETS", "TERRAIN_WITH_LABELS", "TOPOGRAPHIC" };
+		ComboBox<String> mapComboBox = new ComboBox<>(FXCollections.observableArrayList(maps));
+		mapComboBox.setValue(maps[2]);
+		mapComboBox.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent e) {
+				if (mapComboBox.getValue() == "LIGHT_GRAY_CANVAS") {
+					map.setMapView("LIGHT_GRAY_CANVAS");
+				}
+				if (mapComboBox.getValue() == "IMAGERY") {
+					map.setMapView("IMAGERY");
+				}
+				if (mapComboBox.getValue() == "STREETS") {
+					map.setMapView("STREETS");
+				}
+				if (mapComboBox.getValue() == "TERRAIN_WITH_LABELS") {
+					map.setMapView("TERRAIN_WITH_LABELS");
+				}
+				if (mapComboBox.getValue() == "TOPOGRAPHIC") {
+					map.setMapView("TOPOGRAPHIC");
+				}
+			}
+		});
+
+		stationBtn = new ToggleButton();
+		File stationFd = new File("src/resources/icons/stationImg.png");
+		ImageView stationImg = new ImageView(new Image(stationFd.toURI().toString()));
+		stationBtn.setGraphic(stationImg);
+		stationBtn.setToggleGroup(toolBox);
+		stationBtn.setUserData(ToolBoxType.STATION);
+		stationBtn.setTooltip(new Tooltip("Create new Stations."));
+
+		trackBtn = new ToggleButton();
+		File trackFd = new File("src/resources/icons/trackImg.png");
+		ImageView trackImg = new ImageView(new Image(trackFd.toURI().toString()));
+		trackBtn.setGraphic(trackImg);
+		trackBtn.setToggleGroup(toolBox);
+		trackBtn.setUserData(ToolBoxType.TRACK);
+		trackBtn.setTooltip(new Tooltip("Create tracks between stations."));
+
+		trackBtn.setOnAction(new EventHandler<ActionEvent>() {
+			public void handle(ActionEvent e) {
+				Draw draw = new Draw(railPane, data);
+				draw.trackDraw();
+				setTrackCheck(true);
+
+			}
+		});
+
+		clearBtn = new ToggleButton("CLEAR");
+		clearBtn.setToggleGroup(toolBox);
+		clearBtn.setUserData(ToolBoxType.CLEAR);
+		clearBtn.setTooltip(new Tooltip("Clear Map Tool"));
+
+		clearBtn.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent e) {
+				Draw draw = new Draw(railPane, data);
+				draw.clear();
+
+				data.clearStationList();
+				// railPane.getStationList().clear();
+				// railPane.clearStationNum();// check up on this.
+				// View Pane
+				// acceptable.
+				receiptView.clearPrice();
+				setTrackCheck(false);
+
+				filter = new FilterComponent();
+				filter.clearStationsStack();
+
+				StatisticsPane.clearCoordinateView();
+				sp.clearStationLabel();
+			}
+		});
+
+		ToolBoxAction tlbxaction = new ToolBoxAction(data);
+
+		undoBtn = new ToggleButton("UNDO");
+		undoBtn.setToggleGroup(toolBox);
+		undoBtn.setUserData(ToolBoxType.UNDO);
+		undoBtn.setTooltip(new Tooltip("Undo Action"));
+
+		undoBtn.setOnAction(new EventHandler<ActionEvent>() {
+
+			public void handle(ActionEvent e) {
+
+				tlbxaction.undo();
+				railPane.getChildren().clear();
+
+				Draw draw = new Draw(railPane, data);
+				draw.stationDraw();
+
+				if (getTrackCheck()) {
+					draw.trackDraw();
+				}
+			}
+
+		});
+
+		redoBtn = new ToggleButton("REDO");
+		redoBtn.setToggleGroup(toolBox);
+		redoBtn.setUserData(ToolBoxType.REDO);
+		redoBtn.setTooltip(new Tooltip("Redo Action"));
+
+		redoBtn.setOnAction(new EventHandler<ActionEvent>() {
+			public void handle(ActionEvent e) {
+				tlbxaction.redo();
+				railPane.getChildren().clear();
+
+				Draw draw = new Draw(railPane, data);
+				draw.stationDraw();
+				if (getTrackCheck()) {
+					draw.trackDraw();
+				}
+			}
+		});
+
+		receiptBtn = new ToggleButton("ESTIMATE PRICE");
+		receiptBtn.setToggleGroup(toolBox);
+		receiptBtn.setUserData(ToolBoxType.STATION);
+		receiptBtn.setTooltip(new Tooltip("Estimate Price"));
+		receiptBtn.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent e) {
+				// This is the button that has to show the calculation.
+				calprice = new CalculatePrice(data, railPane, getMap(), getReceipt(), changePrice);
+				calprice.interateThruList(getTrackCheck());
+				Flag = true;
+				receiptView.show();
+			}
+		});
+
+		updatePriceBtn = new ToggleButton("CHANGE PRICE");
+		updatePriceBtn.setToggleGroup(toolBox);
+		updatePriceBtn.setTooltip(new Tooltip("Estimate Price"));
+		updatePriceBtn.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent e) {
+				changePrice.ChangePricePane(receiptView);
+			}
+		});
+
+		HBox toolBoxContainer = new HBox();
+
+		toolBoxContainer.getChildren().addAll(stationBtn, trackBtn, undoBtn, redoBtn, clearBtn, mapComboBox, receiptBtn,
+				updatePriceBtn);
+
+		toolBoxContainer.setPadding(new Insets(8));
+		toolBoxContainer.setSpacing(4);
+
+		return toolBoxContainer;
+
+	}
+
+	/**
+	 * Antonio creates map pane
+	 */
+	private void initMap() {
+		map = new Map();
+		bindPane.getChildren().add(map.getMapView());
+
+		borderpane.setCenter(bindPane);
+		bindPane.setPrefSize(1000, 700);
+
+	}
+
+	/**
+	 * Antonio get Map
+	 */
+	public Map getMap() {
+		return map;
+	}
+
+	public ReceiptView getReceipt() {
+		return receiptView;
+	}
+
+	/**
+	 * Navin creates rail pane
+	 */
+	private void initRailPane() {
+
+		railPane = new RailPane(toolBox, data);
+
+		railPane.prefWidthProperty().bind(bindPane.widthProperty());
+		railPane.prefHeightProperty().bind(bindPane.heightProperty());
+
+		bindPane.getChildren().add(railPane);
+
+	}
+
+	/**
+	 * Navin get Tool Box
+	 * 
+	 * @return toolBox
+	 */
+	public ToggleGroup getToolBox() {
+		return toolBox;
+	}
+
+	/**
+	 * Navin get Rail Pane
+	 * 
+	 * @return
+	 */
+	public RailPane getRailPane() {
+		return railPane;
+	}
+
+	/**
+	 * Navin initialize Stats Pane
+	 */
+	private void initStatistics() {
+		sp = new StatisticsPane();
+		borderpane.setLeft(sp.getStatsColumn());
+	}
+
+	/**
+	 * Navin get stats pane
+	 * 
+	 * @return sp
+	 */
+	public StatisticsPane getStatisticsPane() {
+		return sp;
+	}
+
+}

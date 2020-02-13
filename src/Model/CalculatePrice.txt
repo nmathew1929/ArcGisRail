@@ -1,0 +1,115 @@
+package Model;
+
+import java.util.ArrayList;
+
+import View.ChangePrice;
+import View.Map;
+import View.ReceiptView;
+import navironrails.fxext.FilterComponent;
+import navironrails.fxext.RailPane;
+import navironrails.fxext.StationRep;
+import navironrails.fxext.TrackRep;
+
+/*
+ * Purpose of the app is too calculate the estimate that need to be provided.
+ */
+public class CalculatePrice {
+	private ArrayList<StationRep> stationList;
+	private RailPane rp;
+	private FilterComponent filter;
+	private ReceiptLogic rl;
+	private PointLogic pointLogic;
+	private Map map;
+	private ReceiptView receiptView;
+	private ArrayList<String> list;
+
+	public static int stations; // Why does this need to be static
+	private ChangePrice cp;
+	private TrackRep trackRep;
+	private double[][] trackPixels;
+	private Data data;
+
+	/*
+	 * @author: Antonio
+	 * @param: data
+	 * @param: rp
+	 * @param: map
+	 * @param: receiptView
+	 * @param: cp
+	 * 
+	 */
+	public CalculatePrice(Data data, RailPane rp, Map map, ReceiptView receiptView, ChangePrice cp) {
+		this.data = data;
+		this.rp = rp;
+		// System.out.println("Is this null? " + rp);
+
+		stationList = data.getStationList();
+		stations = data.getStationNum();
+		this.map = map;
+		rl = new ReceiptLogic(map);
+		filter = new FilterComponent();
+		this.receiptView = receiptView;
+		trackRep = new TrackRep(rp, data);
+		this.cp = cp;
+	}
+
+	/**
+	 * @author Antonio does price calculation for receipt
+	 * @param trackPixels
+	 */
+
+	public void priceCalculation(double[][] trackPixels) {
+		ArrayList<String> list = trackRep.trackSegmentStrGen(trackPixels);
+		// System.out.println(list.size());
+		pointLogic = new PointLogic();
+
+		for (int i = 0; i < list.size(); i += 5) {
+			double distance = rl.getDistance(Double.valueOf(list.get(i + 1)), Double.valueOf(list.get(i + 2)),
+					Double.valueOf(list.get(i + 3)), Double.valueOf(list.get(i + 4)));
+			double price = rl.getDistancePrice(list.get(i), distance, cp);
+			filter.filterType(list.get(i), price, distance, receiptView);
+
+			System.out.println("*track price set to " + cp.getTrackPrice());
+			System.out.println("*water price set to " + cp.getWtrBrdgePrice());
+			System.out.println("*road price set to " + cp.getRoadBrdgPrice());
+			System.out.println("*station price set to " + cp.getStationPrice());
+		}
+	}
+
+
+	/*
+	 * @author: Antonio iterates through station list to calculate whole track
+	 */
+	public void interateThruList(boolean value) {
+		if (value) {
+			// houses pixels from one station to another
+			// This iteration is for building tracks.
+			for (int i = 0; i < stationList.size() - 1; i++) {
+				double x1, y1, x2, y2;
+				x1 = stationList.get(i).getCenterX();
+				y1 = stationList.get(i).getCenterY();
+				x2 = stationList.get(i + 1).getCenterX();
+				y2 = stationList.get(i + 1).getCenterY();
+
+				System.out.println(x1 + x2 + y1 + y2);
+
+				trackPixels = rp.getImgPro().trackPixelAnalysis(x1, y1, x2, y2);
+				System.out.println("Is trckPixels null?" + trackPixels);
+
+				priceCalculation(trackPixels);
+
+			}
+		}
+		stationAndTotal();
+	}
+
+	/**
+	 * @author Antonio updates receipt pane with price of stations and sumtotal
+	 */
+
+	public void stationAndTotal() {
+		filter.updateStations(stationList.size(), receiptView, cp);
+		filter.updateTotal(receiptView);
+	}
+
+}

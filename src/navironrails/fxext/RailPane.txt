@@ -1,0 +1,150 @@
+/*
+* Copyright <YEAR> <COPYRIGHT HOLDER>
+*
+* Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following
+* conditions are met:
+*
+* 1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following
+* disclaimer.
+*
+* 2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following
+* disclaimer in the documentation and/or other materials provided with the distribution.
+*
+* 3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote
+* products derived from this software without specific prior written permission.
+*
+* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
+* EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+* MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
+* THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+* SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT
+* OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+* HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
+* TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+* SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*
+*
+ */
+
+/**
+ * @package navironrails.fxext
+ * 
+ * The navironrails.fxext package implements NavironRails Specific extensions to the JavaFX
+ * framework. In particular, this includes abstractions which implement visual representations
+ * of elements within different civil systems.
+ * 
+ * Currently, the fxext package only has a loose grouping of classes which implement visual
+ * representations for railway systems and railway components. The package will be refactored
+ * to include visual representations of multiple different civil systems as sub-packages.
+ * 
+ */
+
+package navironrails.fxext;
+
+import java.util.ArrayList;
+
+import Model.Data;
+import cv.ImageProcessing;
+import javafx.scene.control.ToggleGroup;
+import javafx.scene.control.Tooltip;
+import javafx.scene.layout.Pane;
+
+/**
+ * @brief Handles visual representations of rail objects within a pane.
+ * 
+ *        This object provides a convenient and useful place for us to store and
+ *        manipulate visual representations of Rail components within the
+ *        Railway civil system.
+ * 
+ * @author Navin
+ * @author Antonio
+ */
+public class RailPane extends Pane {
+
+	// Store x and y values of all Stations on the pain.
+	// Also is used for tracks.
+	// This arraylist used to be stored in the Station class, which was high
+	// coupling.
+	// StationRep class was interdependent on the TrackRep class.
+
+	// Does it need to be static
+	// House the x and y values. For stations.
+	//private static final ArrayList<Double> xArr = new ArrayList<Double>();
+	//private static final ArrayList<Double> yArr = new ArrayList<Double>();
+	
+	private ArrayList<StationRep> stationList;
+
+	private ImageProcessing imgPro;
+
+	private ToggleGroup tlbxData;
+	private int stationNum;
+	private Tooltip tooltip;
+	private Data data;
+
+
+	public enum RailComponentType {
+		STATION, TRACK,
+	}
+
+	public RailPane(ToggleGroup tlbx, Data data) {
+		tlbxData = tlbx;
+		imgPro = new ImageProcessing();
+		this.data = data;
+		stationList = new ArrayList<StationRep>();
+		stationNum = stationList.size();// This should be zero in the beginning.
+
+	}
+
+	public ImageProcessing getImgPro() {
+		return imgPro;
+	}
+
+
+
+	//getter for station
+	public int getStationNum() {
+		return stationNum;
+	}
+
+	//useful clearing stations.
+	//The list needs to be cleared, and then the number should be gotten from there.
+	public void clearStationNum() {
+		stationNum = 0;
+	}
+
+	
+	//getter and setters.
+	/*
+	 * @author: antonio
+	 */
+
+
+	public ArrayList<StationRep> getStationList(){
+		return stationList;
+	}
+
+	
+	//this will register the station element on itself.
+	//And adds it to the stationList
+	/*
+	 * @author: navin
+	 */
+
+	public StationRep registerStationComponent(double x, double y) {
+
+			StationRep station = new StationRep(x, y);
+			data.addStationtoList(station);
+			//stationList.add(station);
+			this.getChildren().add(station);
+		
+		return station;
+
+	}
+	
+	//only to be used for undo
+	public void drawStations() {
+		this.getChildren().addAll(getStationList());
+	}
+	
+	//maybe include a method for the track registration.
+}

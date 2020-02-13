@@ -1,0 +1,181 @@
+package cv;
+
+import java.util.ArrayList;
+
+import org.opencv.core.Core;
+import org.opencv.core.CvType;
+import org.opencv.core.Mat;
+import org.opencv.core.Point;
+import org.opencv.core.Scalar;
+import org.opencv.imgcodecs.Imgcodecs;
+import org.opencv.imgproc.Imgproc;
+
+import navironrails.fxext.StationRep;
+
+public class ImageProcessing {
+	private Imgcodecs imageCodecs;
+	private String filename;
+	private Mat img;
+	private Point point;
+
+	private StationRep stationRep;
+
+	private ArrayList<Integer> trackPixelCordX;
+	private ArrayList<Integer> trackPixelCordY;
+	
+	private final double[] water = { 36, 34, 29 };
+	private final double[] land = { 53, 53, 52 };
+	private final double[] nature = { 56, 57, 55 };
+	private final double[] white = { 255, 255, 255};
+
+	public ImageProcessing() {
+		System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+		imageCodecs = new Imgcodecs();
+		filename = "src/resources/saved.png";
+		// the image is being read in to use for analysis.
+		img = imageCodecs.imread(filename, imageCodecs.IMREAD_UNCHANGED);
+		// System.out.println(img.dims());
+
+		// System.out.println("The image processing width is: " + img.width());
+		// System.out.println("The image processing height is : " + img.height());
+		// the two lists that keep track of the x and y values for all the pixels.
+		trackPixelCordX = new ArrayList<>();
+		trackPixelCordY = new ArrayList<>();
+	}
+
+
+
+	// The method used to get color from a point.
+	public void getColorFromPoint(double x, double y) {
+		double[] color = img.get((int) y, (int) x);
+		System.out.println(color.length);
+		System.out.print("Colors are: ");
+		for (int i = 0; i < color.length - 1; i++) {
+			// System.out.print(color[i] + " ");
+		}
+		// System.out.println();
+	}
+
+	// Helper?
+	// This is used to verify points.
+	public double[] getColorFromPointList(double x, double y) {
+		double[] color = img.get((int) y, (int) x);
+		return color;
+	}
+
+	// returns the image matrix.
+	public Mat getImg() {
+		return img;
+	}
+
+	/*
+	 * @author: navin this gets colors of all the pixels between two points.
+	 * @param x1, y1: starting points of one station.
+	 * @param x2, y2: starting points  of the second station.
+	 */
+	public double[][] trackPixelAnalysis(double x1, double y1, double x2, double y2) {
+
+		// This will be supplied by the class which calls this.
+		// Need to be iterated.
+		int xint1, xint2, yint1, yint2;
+		// split it up for readability.
+		xint1 = (int) Math.round(x1);
+		xint2 = (int) Math.round(x2);
+		yint1 = (int) Math.round(y1);
+		yint2 = (int) Math.round(y2);
+
+		// helper
+		System.out.println("From Image Processing b4 renderline:" + x1 + y1 + " " + x2 + y2);
+
+		// this method adds value for all two lists. trackPixelCoordX and
+		// trackPixelCoordY
+		renderLine(xint1, yint1, xint2, yint2);
+
+		// needs to return an 2D array.
+		// one for the pixel
+		// one for the color value.
+
+		// this double array going to contain
+		// When you make an array you put the size in it.
+
+		// this array holds the x,y and bgr values in them.
+		double[][] colorMap = new double[trackPixelCordX.size()][5];
+
+		double[] color;
+
+		for (int i = 0; i <= trackPixelCordX.size() - 1; i++) {
+			// this holds the pixel values for all track.
+			// This should return me pixel values in double array.
+			colorMap[i][0] = trackPixelCordX.get(i);
+			colorMap[i][1] = trackPixelCordY.get(i);
+
+			color = img.get(trackPixelCordY.get(i).intValue(), trackPixelCordX.get(i).intValue());
+
+			/*
+			 * System.out.println("Color value bgr"); System.out.println(color[0]);
+			 * System.out.println(color[1]); System.out.println(color[2]);
+			 */
+
+			// x and y value for the point is places on the first array.
+			// System.out.println("The colormap 2nd array " + colorMap[i].length);
+			for (int j = 0; j <= 3; j++) {
+				// System.out.println(i);
+				if (j == 3) {
+					break;
+				} else {
+					// System.out.println(j);
+					colorMap[i][j + 2] = color[j];
+				}
+			}
+
+		}
+
+		trackPixelCordX.clear();
+		trackPixelCordY.clear();
+		//hashmap of point(x,y) and color[ b, g, r]? 
+
+		return colorMap;
+	}
+
+	/*
+	 * @author: navin breshnaham's line algorithm, is used to get all the pixels
+	 * locations that are be between two points. the java port of opencv didnt have
+	 * this implemented, due to some error.
+	 */
+	public void renderLine(int x1, int y1, int x2, int y2) {
+		int dx = Math.abs(x2 - x1);
+		int dy = Math.abs(y2 - y1);
+
+		int stepx, stepy;
+
+		if (x1 < x2)
+			stepx = 1;
+		else
+			stepx = -1;
+
+		if (y1 < y2)
+			stepy = 1;
+		else
+			stepy = -1;
+
+		int err = dx - dy;
+
+		while (true) {
+			trackPixelCordX.add(Integer.valueOf(x1));
+			trackPixelCordY.add(Integer.valueOf(y1));
+			if (x1 == x2 && y1 == y2)
+				break;
+
+			int err2 = 2 * err;
+			if (err2 > -dy) {
+				err -= dy;
+				x1 += stepx;
+			}
+			if (err2 < dx) {
+				err += dx;
+				y1 += stepy;
+			}
+		}
+	}
+
+}

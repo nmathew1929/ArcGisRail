@@ -1,0 +1,128 @@
+package navironrails.fxext;
+
+import java.text.DecimalFormat;
+import java.util.ArrayList;
+
+import com.esri.arcgisruntime.internal.httpclient.impl.cookie.r;
+
+import View.ChangePrice;
+import View.ReceiptView;
+import navironrails.Factory.TrackFactory;
+
+public class FilterComponent {
+	
+	private int totalLand = 0;
+	private int totalWater = 0;
+	private int totalroad = 0;
+	private double totalLandDist = 0;
+	private double totalWaterDist = 0;
+	private double totalRoadDist = 0;
+	private double totalLandPrice = 0;
+	private double totalWaterPrice = 0;
+	private double totalRoadPrice = 0;
+	private DecimalFormat df;
+	private String formatted, formatted2;
+	private ArrayList<Double> total;
+	private double sum;
+	//private double stationPrice;
+	
+	/**
+	 * Antonio 
+	 * Constructor
+	 */
+	public FilterComponent() {
+		total = new ArrayList<Double>();
+	}
+	
+	/**
+	 * Antonio
+	 * updates total of each item type incrementally
+	 * and updates receipt pane
+	 * @param type
+	 * @param price
+	 * @param distance
+	 * @param r
+	 */
+	public void filterType(String type, double price, double distance, ReceiptView r) {
+		df = new DecimalFormat("###,###,###.##");
+		formatted = df.format(price); 
+		formatted2 = df.format(distance);
+		total.add(price);
+		switch(type) {
+			case "Land": 
+				totalLand +=1; 
+				totalLandDist += distance;
+				totalLandPrice += price;
+				formatted = df.format(totalLandPrice); 
+				formatted2 = df.format(totalLandDist);
+				r.updateTrackQnty(totalLand);
+				r.updateTrackDistance("" + formatted2 + " miles");
+				r.updateTrackPrice("$ " + formatted);
+			break;
+			case "Water":
+				totalWater +=1; 
+				totalWaterDist += distance;
+				totalWaterPrice += price;
+				formatted = df.format(totalWaterPrice); 
+				formatted2 = df.format(totalWaterDist);
+				r.updateWtrBrdgeQnty(totalWater);
+				r.updateWtrDistance("" + formatted2 + " miles");
+				r.updateWtrBrdgePrice("$ " + formatted);
+			case "Road":
+				totalroad +=1; 
+				totalRoadDist += distance;
+				totalRoadPrice += price;
+				formatted = df.format(totalRoadPrice); 
+				formatted2 = df.format(totalRoadDist);
+				r.updateRoadBrdgeQnty(totalroad);
+				r.updateRoadDistance("" + formatted2 + " miles");
+				r.updateRoadBrdgePrice("$ " + formatted);
+			break;
+		}
+	}
+	
+	/**
+	 * Antonio
+	 * gets price of stations
+	 * @param numOfStations
+	 * @param r
+	 * @param cp
+	 */
+	public void updateStations(int numOfStations, ReceiptView r, ChangePrice cp) {
+		r.updateStationQnty(numOfStations);
+		double sum = cp.getStationPrice() * numOfStations;
+		
+		total.add(sum);
+		
+		df = new DecimalFormat("###,###,###,###.##");
+		formatted = df.format(sum); 
+		r.updateStationPrice("$ " + formatted);
+	}
+	
+	/**
+	 * Antonio
+	 * clears station Stack
+	 */
+	public void clearStationsStack() {
+		total.clear();
+	}
+	
+	/**
+	 * Antonio
+	 * updates total
+	 * @param r
+	 */
+	public void updateTotal(ReceiptView r) {
+		sum = 0;
+		df = new DecimalFormat("#,###,###,###.##");
+		for(int i = 0; i < total.size(); i++) {
+		    sum += total.get(i);
+		    System.out.println("total.get(" + i + ") = " + total.get(i));
+		}
+		System.out.println("current sum total: " + sum);
+		formatted = df.format(sum); 
+		r.updateSumTotal("$ " + formatted);
+	}
+
+
+}

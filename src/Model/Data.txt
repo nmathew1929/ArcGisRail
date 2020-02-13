@@ -1,0 +1,90 @@
+package Model;
+
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Deque;
+
+import navironrails.fxext.StationRep;
+
+/*
+ * Houses the data concerning the stations.
+ * Controls the number of stations objects, at a given moment. 
+ * Methods for undo, redo and estimate all depend on this class.
+ */
+public class Data {
+
+	private ArrayList<StationRep> stationList;
+	private Deque<StationRep> undoStack;
+
+	/*
+	 * @author:navin Constructor
+	 */
+	public Data() {
+		stationList = new ArrayList<StationRep>();
+		undoStack = new ArrayDeque<>();
+	}
+
+	/*
+	 * /*
+	 * 
+	 * @author: navin used for redo action
+	 */
+	public void redoAction() {
+		stationList.add(undoStack.pop());
+	}
+
+	/*
+	 * @author: navin used for undo.
+	 */
+	public void removeLastStn() {
+		StationRep rmvStn;
+		rmvStn = stationList.remove(stationList.size() - 1);
+		undoStack.push(rmvStn);
+
+	}
+
+	/*
+	 * Stations get added to the list. This method is when a station is registerd on
+	 * the pane by the user.
+	 * 
+	 * @author: navin
+	 * 
+	 * @param: station
+	 */
+	public void addStationtoList(StationRep station) {
+		stationList.add(station);
+	}
+
+	/*
+	 * get the current number of stations present.
+	 * 
+	 * @author: navin
+	 */
+	public int getStationNum() {
+		return stationList.size();
+	}
+
+	/*
+	 * clears the stationist gets called by the clear in gui.
+	 * 
+	 * @author: navin
+	 */
+	public void clearStationList() {
+		stationList.clear();
+	}
+
+	/*
+	 * @author: navin getter method for stationList
+	 */
+	public ArrayList<StationRep> getStationList() {
+		return stationList;
+	}
+
+	/*
+	 * @author: navin get the stack for the undo button.
+	 */
+	public Deque<StationRep> getStack() {
+		return undoStack;
+	}
+
+}

@@ -1,0 +1,50 @@
+package navironrails.Factory;
+
+import javafx.scene.shape.Line;
+
+/*
+ * @author: navin
+ * this is the factory that takes in the modifier and then makes that kind of track.
+ */
+public class TrackFactory {
+	private String  trackType;//Deterines what type of a track will be built.
+	private double x1, y1, x2, y2;
+	private Line line;
+
+	/*
+	 * @author: navin
+	 * @param: trackType
+	 * @param: x1, y1
+	 * @paraml: x2, y2
+	 */
+	public TrackFactory(String trackType, double x1, double y1, double x2, double y2) {
+			this.trackType = trackType;
+			this.x1 = x1;
+			this.y1 = y1;
+			this.x2 = x2;
+			this.y2 = y2;
+		    	
+	}
+	
+
+	/*
+	 * @author: navin
+	 * used to create different types of tracks from one point to another.
+	 */
+	public Line createLine() {
+		if(trackType == "Land") {
+			line = new LandTrack(x1,y1,x2,y2);
+		}
+		else if(trackType == "Water") {
+			line = new WaterAreaTrack(x1,y1,x2,y2);
+		}
+		else if(trackType == "Road") {
+			line = new RoadTrack(x1,y1,x2,y2);
+		}
+		else {
+			System.out.println("no tracks.");
+		}
+		return line;
+	}
+
+}
